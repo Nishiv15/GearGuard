@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend_gearguard/services/auth_services.dart'; // Add this import
 
 class AuthWidget extends StatefulWidget {
   const AuthWidget({super.key});
@@ -69,9 +70,7 @@ class _AuthWidgetState extends State<AuthWidget> {
                       "Password",
                       obscure: true,
                       validator: (v) =>
-                          v != null && v.length < 6
-                              ? "Min 6 characters"
-                              : null,
+                          v != null && v.length < 6 ? "Min 6 characters" : null,
                     ),
                     if (!isLogin)
                       _field(
@@ -84,11 +83,15 @@ class _AuthWidgetState extends State<AuthWidget> {
                       ),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: _handleSubmit,
+                      onPressed: loading
+                          ? null
+                          : _handleSubmit, // Disable button during loading
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 48),
                       ),
-                      child: Text(isLogin ? "Login" : "Register"),
+                      child: loading
+                          ? const CircularProgressIndicator() // Show loader
+                          : Text(isLogin ? "Login" : "Register"),
                     )
                   ],
                 )
@@ -100,23 +103,54 @@ class _AuthWidgetState extends State<AuthWidget> {
     );
   }
 
-  void _handleSubmit() {
+  void _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (isLogin) {
-      Navigator.pushReplacementNamed(context, '/app');
-    } else {
+    setState(() => loading = true);
+
+    try {
+      if (isLogin) {
+        final result = await AuthService.login(
+          email: emailController.text,
+          password: passwordController.text,
+        );
+        if (result != null && result.startsWith("ey")) {
+          // JWT tokens start with "ey"
+          // Assuming token is stored elsewhere, e.g., shared preferences
+          Navigator.pushReplacementNamed(context, '/app');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result ?? "Login failed")),
+          );
+        }
+      } else {
+        final error = await AuthService.signup(
+          companyName: companyController.text,
+          name: managerController.text,
+          email: emailController.text,
+          password: passwordController.text,
+          repassword: confirmPasswordController.text,
+        );
+        if (error == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Registration successful. Please login."),
+            ),
+          );
+          setState(() => isLogin = true);
+          _clearSignupFields();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error)),
+          );
+        }
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Registration successful. Please login."),
-        ),
+        SnackBar(content: Text("Error: $e")),
       );
-
-      setState(() {
-        isLogin = true;
-      });
-
-      _clearSignupFields();
+    } finally {
+      setState(() => loading = false);
     }
   }
 
@@ -165,8 +199,7 @@ class _AuthWidgetState extends State<AuthWidget> {
       child: TextFormField(
         controller: c,
         obscureText: obscure,
-        validator: validator ??
-            (v) => v!.isEmpty ? "$label required" : null,
+        validator: validator ?? (v) => v!.isEmpty ? "$label required" : null,
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
