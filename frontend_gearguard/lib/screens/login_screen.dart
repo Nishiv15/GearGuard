@@ -9,15 +9,15 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      appBar: NavigationWidget(),
+      appBar: NavigationWidget(showMenu: false), // 🔥 Navbar without menu
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            child: AuthWidget(), // Auth UI here
+            child: AuthWidget(),
           ),
         ),
       ),
-      bottomNavigationBar: FooterWidget(),
+      bottomNavigationBar: FooterWidget(), // ✅ Footer added
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import './screens/login_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/app_shell.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,12 +14,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'GearGuard',
-      theme: ThemeData(
-        primarySwatch: Colors.indigo,
-      ),
-      home: const LoginScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const LoginScreen(),
+        '/app': (context) => const AppShell(),
+      },
     );
   }
 }
-
-

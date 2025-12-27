@@ -2,46 +2,60 @@ import 'package:flutter/material.dart';
 
 class NavigationWidget extends StatelessWidget
     implements PreferredSizeWidget {
-  const NavigationWidget({super.key});
+  final bool showMenu;
+  final int? selectedIndex;
+  final Function(int)? onItemTap;
+
+  const NavigationWidget({
+    super.key,
+    this.showMenu = true,
+    this.selectedIndex,
+    this.onItemTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.black, // ✅ Black navbar
+      backgroundColor: Colors.black,
       elevation: 0,
       title: const Text(
         "GearGuard",
         style: TextStyle(
-          color: Colors.white, // ✅ White text
+          color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
       ),
-      iconTheme: const IconThemeData(
-        color: Colors.white, // ✅ White icons
-      ),
-      actions: [
-        _navItem("Dashboard"),
-        _navItem("Equipment"),
-        _navItem("Maintenance"),
-        _navItem("Calendar"),
-        const SizedBox(width: 12),
-        const CircleAvatar(
-          backgroundColor: Colors.white,
-          child: Icon(Icons.person, color: Colors.black),
-        ),
-        const SizedBox(width: 16),
-      ],
+      actions: showMenu ? _menuItems() : [],
     );
   }
 
-  Widget _navItem(String title) {
+  List<Widget> _menuItems() {
+    return [
+      _navItem("Dashboard", 0),
+      _navItem("Maintenance", 1),
+      _navItem("Calendar", -1),
+      _navItem("Equipment", -1),
+      _navItem("Reporting", -1),
+      _navItem("Teams", -1),
+      const SizedBox(width: 12),
+      const CircleAvatar(
+        backgroundColor: Colors.white,
+        child: Icon(Icons.person, color: Colors.black),
+      ),
+      const SizedBox(width: 16),
+    ];
+  }
+
+  Widget _navItem(String title, int index) {
     return TextButton(
-      onPressed: () {},
+      onPressed: index == -1 ? null : () => onItemTap?.call(index),
       child: Text(
         title,
-        style: const TextStyle(
-          color: Colors.white, // ✅ White menu text
-          fontWeight: FontWeight.w500,
+        style: TextStyle(
+          color: index == selectedIndex
+              ? Colors.white
+              : Colors.white70,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
