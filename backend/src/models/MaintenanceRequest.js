@@ -8,20 +8,9 @@ const maintenanceRequestSchema = new mongoose.Schema(
       required: true,
     },
 
-    subject: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    description: {
-      type: String,
-      trim: true,
-    },
-
-    type: {
-      type: String,
-      enum: ["CORRECTIVE", "PREVENTIVE"],
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
 
@@ -31,10 +20,33 @@ const maintenanceRequestSchema = new mongoose.Schema(
       required: true,
     },
 
+    equipmentCategory: {
+      type: String, // auto-filled from Equipment
+      required: true,
+    },
+
     maintenanceTeamId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "MaintenanceTeam",
       required: true,
+    },
+
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // Technician
+      default: null,
+    },
+
+    type: {
+      type: String,
+      enum: ["CORRECTIVE", "PREVENTIVE"],
+      required: true,
+    },
+
+    priority: {
+      type: String,
+      enum: ["LOW", "MEDIUM", "HIGH"],
+      default: "MEDIUM",
     },
 
     status: {
@@ -43,33 +55,17 @@ const maintenanceRequestSchema = new mongoose.Schema(
       default: "NEW",
     },
 
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-
-    assignedTo: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-
     scheduledDate: {
-      type: Date,
-    },
-
-    startedAt: {
-      type: Date,
-    },
-
-    completedAt: {
-      type: Date,
+      type: Date, // required only for PREVENTIVE
     },
 
     duration: {
       type: Number, // hours
+      default: 0,
     },
+
+    startedAt: Date,
+    completedAt: Date,
 
     isOverdue: {
       type: Boolean,
@@ -78,11 +74,6 @@ const maintenanceRequestSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-/* ---------- INDEXES ---------- */
-maintenanceRequestSchema.index({ companyId: 1, status: 1 });
-maintenanceRequestSchema.index({ companyId: 1, maintenanceTeamId: 1 });
-maintenanceRequestSchema.index({ companyId: 1, scheduledDate: 1 });
 
 export default mongoose.model(
   "MaintenanceRequest",

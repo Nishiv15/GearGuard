@@ -6,6 +6,8 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import maintenanceTeamRoutes from "./routes/maintenanceTeamRoutes.js";
+import equipmentRoutes from "./routes/equipmentRoutes.js";
+import maintenanceRequestRoutes from "./routes/maintenanceRequestRoutes.js";
 
 dotenv.config();
 
@@ -20,6 +22,8 @@ app.use(morgan("dev"));
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/teams", maintenanceTeamRoutes);
+app.use("/api/equipments", equipmentRoutes);
+app.use("/api/requests", maintenanceRequestRoutes);
 
 /* ---------- START SERVER ---------- */
 const PORT = process.env.PORT || 5000;
