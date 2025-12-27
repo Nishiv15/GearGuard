@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'widgets/footer_widget.dart';
 import 'widgets/navigation_widget.dart';
+import 'widgets/footer_widget.dart';
 
 void main() {
   runApp(const MyApp());
