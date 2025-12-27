@@ -10,6 +10,7 @@ class AuthWidget extends StatefulWidget {
 class _AuthWidgetState extends State<AuthWidget> {
   bool isLogin = true;
   final _formKey = GlobalKey<FormState>();
+
   final TextEditingController companyController = TextEditingController();
   final TextEditingController managerController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -30,9 +31,7 @@ class _AuthWidgetState extends State<AuthWidget> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Toggle Buttons
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _toggleButton("Login", true),
                     _toggleButton("Signup", false),
@@ -58,12 +57,12 @@ class _AuthWidgetState extends State<AuthWidget> {
                         controller: emailController,
                         label: "Email",
                         keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Email is required";
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return "Email required";
                           }
-                          if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
-                            return "Enter a valid email";
+                          if (!RegExp(r'\S+@\S+\.\S+').hasMatch(v)) {
+                            return "Invalid email";
                           }
                           return null;
                         },
@@ -72,39 +71,29 @@ class _AuthWidgetState extends State<AuthWidget> {
                         controller: passwordController,
                         label: "Password",
                         obscureText: true,
-                        validator: (value) {
-                          if (value == null || value.length < 6) {
-                            return "Password must be at least 6 characters";
-                          }
-                          return null;
-                        },
+                        validator: (v) =>
+                            v != null && v.length < 6
+                                ? "Min 6 characters"
+                                : null,
                       ),
                       if (!isLogin)
                         _textField(
                           controller: confirmPasswordController,
                           label: "Re-enter Password",
                           obscureText: true,
-                          validator: (value) {
-                            if (value != passwordController.text) {
-                              return "Passwords do not match";
-                            }
-                            return null;
-                          },
+                          validator: (v) => v != passwordController.text
+                              ? "Passwords do not match"
+                              : null,
                         ),
+
                       const SizedBox(height: 20),
 
                       ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            // TODO: connect API later
-                            debugPrint(
-                                isLogin ? "Login Success" : "Signup Success");
-                          }
-                        },
+                        onPressed: _handleSubmit,
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(double.infinity, 48),
                         ),
-                        child: Text(isLogin ? "Login" : "Signup"),
+                        child: Text(isLogin ? "Login" : "Register"),
                       )
                     ],
                   ),
@@ -117,18 +106,52 @@ class _AuthWidgetState extends State<AuthWidget> {
     );
   }
 
-  Widget _toggleButton(String text, bool loginMode) {
+  // 🔑 MAIN LOGIC HERE
+  void _handleSubmit() {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (isLogin) {
+      // ✅ LOGIN → DASHBOARD
+      Navigator.pushReplacementNamed(context, '/app');
+    } else {
+      // ✅ REGISTER → BACK TO LOGIN
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Registration successful. Please login."),
+        ),
+      );
+
+      setState(() {
+        isLogin = true;
+      });
+
+      _clearSignupFields();
+    }
+  }
+
+  void _clearSignupFields() {
+    companyController.clear();
+    managerController.clear();
+    passwordController.clear();
+    confirmPasswordController.clear();
+  }
+
+  Widget _toggleButton(String text, bool mode) {
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => isLogin = loginMode),
+        onTap: () {
+          setState(() {
+            isLogin = mode;
+          });
+        },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
                 width: 2,
-                color: isLogin == loginMode
-                    ? Theme.of(context).primaryColor
+                color: isLogin == mode
+                    ? Colors.indigo
                     : Colors.grey.shade300,
               ),
             ),
@@ -138,9 +161,8 @@ class _AuthWidgetState extends State<AuthWidget> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: isLogin == loginMode
-                  ? Theme.of(context).primaryColor
-                  : Colors.grey,
+              color:
+                  isLogin == mode ? Colors.indigo : Colors.grey,
             ),
           ),
         ),
@@ -162,8 +184,7 @@ class _AuthWidgetState extends State<AuthWidget> {
         obscureText: obscureText,
         keyboardType: keyboardType,
         validator: validator ??
-            (value) =>
-                value == null || value.isEmpty ? "$label is required" : null,
+            (v) => v == null || v.isEmpty ? "$label required" : null,
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
