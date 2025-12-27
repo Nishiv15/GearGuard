@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../services/auth_services.dart';
 
 class AuthWidget extends StatefulWidget {
   const AuthWidget({super.key});
@@ -13,57 +12,12 @@ class _AuthWidgetState extends State<AuthWidget> {
   bool loading = false;
   final _formKey = GlobalKey<FormState>();
 
-  final companyController = TextEditingController();
-  final nameController = TextEditingController();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
-
-  void _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => loading = true);
-
-    String? error;
-
-    if (isLogin) {
-      // 🔐 LOGIN
-      final token = await AuthService.login(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
-
-      if (token != null && token.startsWith("ey")) {
-        Navigator.pushReplacementNamed(context, "/app");
-      } else {
-        error = token ?? "Login failed";
-      }
-    } else {
-      // 🏢 SIGNUP
-      error = await AuthService.signup(
-        companyName: companyController.text.trim(),
-        name: nameController.text.trim(),
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-        repassword: confirmPasswordController.text.trim(),
-      );
-
-      if (error == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Registered successfully. Please login")),
-        );
-        setState(() => isLogin = true);
-      }
-    }
-
-    setState(() => loading = false);
-
-    if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error)),
-      );
-    }
-  }
+  final TextEditingController companyController = TextEditingController();
+  final TextEditingController managerController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -80,50 +34,63 @@ class _AuthWidgetState extends State<AuthWidget> {
               children: [
                 Row(
                   children: [
-                    _tab("Login", true),
-                    _tab("Signup", false),
+                    _toggleButton("Login", true),
+                    _toggleButton("Signup", false),
                   ],
                 ),
                 const SizedBox(height: 24),
-
-                if (!isLogin)
-                  _field(companyController, "Company Name"),
-                if (!isLogin)
-                  _field(nameController, "Name"),
-
-                _field(
-                  emailController,
-                  "Email",
-                  validator: (v) =>
-                      v!.contains("@") ? null : "Invalid email",
-                ),
-
-                _field(
-                  passwordController,
-                  "Password",
-                  obscure: true,
-                  validator: (v) =>
-                      v!.length < 6 ? "Min 6 chars" : null,
-                ),
-
-                if (!isLogin)
-                  _field(
-                    confirmPasswordController,
-                    "Re-enter Password",
-                    obscure: true,
-                    validator: (v) =>
-                        v != passwordController.text
+                Column(
+                  children: [
+                    if (!isLogin)
+                      _field(
+                        companyController,
+                        "Company Name",
+                      ),
+                    if (!isLogin)
+                      _field(
+                        managerController,
+                        "Name",
+                      ),
+                    _field(
+                      emailController,
+                      "Email",
+                      validator: (v) {
+                        if (v == null || v.isEmpty) {
+                          return "Email required";
+                        }
+                        if (!RegExp(r'\S+@\S+\.\S+').hasMatch(v)) {
+                          return "Invalid email";
+                        }
+                        return null;
+                      },
+                    ),
+                    _field(
+                      passwordController,
+                      "Password",
+                      obscure: true,
+                      validator: (v) =>
+                          v != null && v.length < 6
+                              ? "Min 6 characters"
+                              : null,
+                    ),
+                    if (!isLogin)
+                      _field(
+                        confirmPasswordController,
+                        "Re-enter Password",
+                        obscure: true,
+                        validator: (v) => v != passwordController.text
                             ? "Passwords do not match"
                             : null,
-                  ),
-
-                const SizedBox(height: 20),
-
-                ElevatedButton(
-                  onPressed: loading ? null : _submit,
-                  child: loading
-                      ? const CircularProgressIndicator()
-                      : Text(isLogin ? "Login" : "Register"),
+                      ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _handleSubmit,
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
+                      child: Text(isLogin ? "Login" : "Register"),
+                    )
+                  ],
                 )
               ],
             ),
@@ -133,7 +100,34 @@ class _AuthWidgetState extends State<AuthWidget> {
     );
   }
 
-  Widget _tab(String text, bool mode) {
+  void _handleSubmit() {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (isLogin) {
+      Navigator.pushReplacementNamed(context, '/app');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Registration successful. Please login."),
+        ),
+      );
+
+      setState(() {
+        isLogin = true;
+      });
+
+      _clearSignupFields();
+    }
+  }
+
+  void _clearSignupFields() {
+    companyController.clear();
+    managerController.clear();
+    passwordController.clear();
+    confirmPasswordController.clear();
+  }
+
+  Widget _toggleButton(String text, bool mode) {
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => isLogin = mode),

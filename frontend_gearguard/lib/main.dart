@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'screens/login_screen.dart';
 import 'screens/app_shell.dart';
+import 'screens/dashboard_screen.dart';
+import 'screens/maintenance_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,20 +15,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'GearGuard',
-      theme: ThemeData(
-        primarySwatch: Colors.indigo,
-      ),
-
-      // 👇 Start at login
+      debugShowCheckedModeBanner: false,
       initialRoute: '/',
-
       routes: {
         '/': (context) => const LoginScreen(),
-
-        // 👇 Main app after auth
         '/app': (context) => const AppShell(),
+
+        // 📊 INTERNAL NAV ROUTES
+        '/dashboard': (context) => const DashboardScreen(),
+        '/maintenance': (context) => const MaintenanceScreen(),
+      },
+
+      // 🚨 FALLBACK
+      onUnknownRoute: (_) {
+        return MaterialPageRoute(
+          builder: (_) => const LoginScreen(),
+        );
       },
     );
   }

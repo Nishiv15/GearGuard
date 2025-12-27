@@ -54,4 +54,6 @@ class AuthService {
       return data["message"] ?? "Login failed";
     }
   }
+
+  static void logout() {}
 }
