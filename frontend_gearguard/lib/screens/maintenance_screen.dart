@@ -1,50 +1,5 @@
 import 'package:flutter/material.dart';
-
-/// ===================== STATUS =====================
-enum MaintenanceStatus {
-  inProgress,
-  blocked,
-  ready,
-}
-
-/// ===================== MODEL =====================
-class MaintenanceRequest {
-  final String subject;
-  final String createdBy;
-  final String maintenanceFor;
-  final String target;
-  final String category;
-  final String requestDate;
-  final String maintenanceType;
-  final String team;
-  final String technician;
-  final String scheduledDate;
-  final String duration;
-  final int priority;
-  final String company;
-  final String notes;
-  final String instructions;
-  final MaintenanceStatus status;
-
-  MaintenanceRequest({
-    required this.subject,
-    required this.createdBy,
-    required this.maintenanceFor,
-    required this.target,
-    required this.category,
-    required this.requestDate,
-    required this.maintenanceType,
-    required this.team,
-    required this.technician,
-    required this.scheduledDate,
-    required this.duration,
-    required this.priority,
-    required this.company,
-    required this.notes,
-    required this.instructions,
-    required this.status,
-  });
-}
+import '../models/maintenance_request.dart';
 
 /// ===================== SCREEN =====================
 class MaintenanceScreen extends StatefulWidget {
@@ -120,7 +75,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen>
     );
   }
 
-  /// ===================== CARD WITH STATUS SIGNAL =====================
+  /// ===================== CARD =====================
   Widget _requestCard(MaintenanceRequest r) {
     final statusColor = _statusColor(r.status);
     final statusText = _statusText(r.status);
@@ -143,19 +98,12 @@ class _MaintenanceScreenState extends State<MaintenanceScreen>
                 style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
               const SizedBox(height: 4),
-
-              // SUBJECT
               Text(
                 r.subject,
                 style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+                    fontSize: 22, fontWeight: FontWeight.bold),
               ),
-
               const SizedBox(height: 10),
-
-              // META + PRIORITY
               Row(
                 children: [
                   Expanded(
@@ -181,7 +129,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen>
             ],
           ),
 
-          // STATUS SIGNAL (TOP RIGHT)
+          // STATUS SIGNAL
           Positioned(
             top: 0,
             right: 0,
@@ -196,10 +144,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen>
                   ),
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  statusText,
-                  style: const TextStyle(fontSize: 12),
-                ),
+                Text(statusText,
+                    style: const TextStyle(fontSize: 12)),
               ],
             ),
           ),
@@ -275,8 +221,6 @@ class _NewRequestDialogState extends State<_NewRequestDialog> {
         company: company,
         notes: notesCtrl.text,
         instructions: instructionsCtrl.text,
-
-        // 🔹 DEFAULT STATUS
         status: MaintenanceStatus.inProgress,
       ),
     );
@@ -291,9 +235,7 @@ class _NewRequestDialogState extends State<_NewRequestDialog> {
         child: Column(
           children: [
             _input("Subject", subjectCtrl),
-
             _readOnly("Created By", createdBy),
-
             _dropdown(
               "Maintenance For",
               ["Equipment", "Work Center"],
@@ -307,7 +249,6 @@ class _NewRequestDialogState extends State<_NewRequestDialog> {
                 });
               },
             ),
-
             _dropdown(
               maintenanceFor == "Equipment"
                   ? "Equipment"
@@ -318,27 +259,20 @@ class _NewRequestDialogState extends State<_NewRequestDialog> {
               target,
               (v) => setState(() => target = v!),
             ),
-
             _readOnly(
               "Category",
               maintenanceFor == "Equipment"
                   ? "Computers"
                   : "Work Center",
             ),
-
             _readOnly("Request Date", "12/18/2025"),
-
             _radioMaintenanceType(),
-
             _readOnly("Team", team),
             _readOnly("Technician", technician),
             _readOnly("Scheduled Date", "12/28/2025 14:30"),
             _readOnly("Duration", "00:00 hours"),
-
             _priority(),
-
             _readOnly("Company", company),
-
             _input("Notes", notesCtrl, lines: 3),
             _input("Instructions", instructionsCtrl, lines: 3),
           ],
@@ -346,13 +280,9 @@ class _NewRequestDialogState extends State<_NewRequestDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text("Cancel"),
-        ),
-        ElevatedButton(
-          onPressed: _submit,
-          child: const Text("Submit"),
-        ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel")),
+        ElevatedButton(onPressed: _submit, child: const Text("Submit")),
       ],
     );
   }
@@ -384,8 +314,9 @@ class _NewRequestDialogState extends State<_NewRequestDialog> {
       child: DropdownButtonFormField<String>(
         value: value,
         items: items
-            .map((e) =>
-                DropdownMenuItem(value: e, child: Text(e)))
+            .map(
+              (e) => DropdownMenuItem(value: e, child: Text(e)),
+            )
             .toList(),
         onChanged: onChanged,
         decoration: InputDecoration(
