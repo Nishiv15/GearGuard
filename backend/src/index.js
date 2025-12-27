@@ -5,6 +5,7 @@ import morgan from "morgan";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import maintenanceTeamRoutes from "./routes/maintenanceTeamRoutes.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(morgan("dev"));
 /* ---------- HEALTH CHECK ---------- */
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/teams", maintenanceTeamRoutes);
 
 /* ---------- START SERVER ---------- */
 const PORT = process.env.PORT || 5000;
