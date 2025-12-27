@@ -25,10 +25,16 @@ class NavigationWidget extends StatelessWidget
           fontWeight: FontWeight.bold,
         ),
       ),
-      actions: showMenu ? _menuItems() : [],
+      actions: [
+        if (showMenu) ..._menuItems(),
+        const SizedBox(width: 8),
+        _profileMenu(context),
+        const SizedBox(width: 16),
+      ],
     );
   }
 
+  /// 🔹 NAVIGATION ITEMS
   List<Widget> _menuItems() {
     return [
       _navItem("Dashboard", 0),
@@ -37,12 +43,6 @@ class NavigationWidget extends StatelessWidget
       _navItem("Equipment", -1),
       _navItem("Reporting", -1),
       _navItem("Teams", -1),
-      const SizedBox(width: 12),
-      const CircleAvatar(
-        backgroundColor: Colors.white,
-        child: Icon(Icons.person, color: Colors.black),
-      ),
-      const SizedBox(width: 16),
     ];
   }
 
@@ -58,6 +58,45 @@ class NavigationWidget extends StatelessWidget
           fontWeight: FontWeight.w600,
         ),
       ),
+    );
+  }
+
+  /// 👤 AVATAR WITH LOGOUT DROPDOWN
+  Widget _profileMenu(BuildContext context) {
+    return PopupMenuButton<String>(
+      position: PopupMenuPosition.under, // ✅ below avatar
+      offset: const Offset(0, 8), // ✅ spacing
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      onSelected: (value) {
+        if (value == 'logout') {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/',
+            (route) => false,
+          );
+        }
+      },
+      icon: const CircleAvatar(
+        backgroundColor: Colors.white,
+        child: Icon(
+          Icons.person,
+          color: Colors.black,
+        ),
+      ),
+      itemBuilder: (context) => const [
+        PopupMenuItem<String>(
+          value: 'logout',
+          child: Row(
+            children: [
+              Icon(Icons.logout, size: 18),
+              SizedBox(width: 8),
+              Text("Logout"),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

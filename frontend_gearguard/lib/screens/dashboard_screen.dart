@@ -6,49 +6,124 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Dashboard",
-              style:
-                  TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 24),
+          // 🔹 PAGE TITLE
+          const Text(
+            "Dashboard",
+            style: TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // 🔹 TOP ACTION BAR (NEW + SEARCH)
+          Row(
+            children: [
+              // ✅ NEW BUTTON
+              ElevatedButton.icon(
+                onPressed: () {
+                  // TODO: Open create maintenance request modal
+                },
+                icon: const Icon(Icons.add),
+                label: const Text("New"),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 14,
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 16),
+
+              // ✅ SEARCH BAR
+              Expanded(
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: "Search...",
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    isDense: true,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 28),
+
+          // 🔹 DASHBOARD CARDS (PLACEHOLDERS AS PER FLOW)
           Row(
             children: const [
-              _Card("New Requests", "12", Colors.red),
-              _Card("In Progress", "5", Colors.orange),
-              _Card("Completed", "18", Colors.green),
+              _DashboardCard(
+                title: "Critical Equipment",
+                count: "4",
+                color: Colors.red,
+              ),
+              SizedBox(width: 16),
+              _DashboardCard(
+                title: "Technician Load",
+                count: "7",
+                color: Colors.blue,
+              ),
+              SizedBox(width: 16),
+              _DashboardCard(
+                title: "Preventive Due",
+                count: "3",
+                color: Colors.green,
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
   }
 }
 
-class _Card extends StatelessWidget {
+class _DashboardCard extends StatelessWidget {
   final String title;
   final String count;
   final Color color;
 
-  const _Card(this.title, this.count, this.color);
+  const _DashboardCard({
+    required this.title,
+    required this.count,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Card(
+        elevation: 2,
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(count,
-                  style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: color)),
-              const SizedBox(height: 8),
-              Text(title),
+              Text(
+                count,
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
         ),
