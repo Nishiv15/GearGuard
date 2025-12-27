@@ -4,6 +4,7 @@ import cors from "cors";
 import morgan from "morgan";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(morgan("dev"));
 
 /* ---------- HEALTH CHECK ---------- */
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
 /* ---------- START SERVER ---------- */
 const PORT = process.env.PORT || 5000;

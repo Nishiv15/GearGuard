@@ -39,7 +39,7 @@ const signup = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: "MANAGER",
+      role: "OWNER",
       permissions: {
         canOnboardUsers: true,
         canCreateTeams: true,
