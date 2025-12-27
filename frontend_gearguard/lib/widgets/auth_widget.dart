@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/auth_services.dart';
 
 class AuthWidget extends StatefulWidget {
   const AuthWidget({super.key});
@@ -9,94 +10,120 @@ class AuthWidget extends StatefulWidget {
 
 class _AuthWidgetState extends State<AuthWidget> {
   bool isLogin = true;
+  bool loading = false;
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController companyController = TextEditingController();
-  final TextEditingController managerController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final companyController = TextEditingController();
+  final nameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+
+  void _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => loading = true);
+
+    String? error;
+
+    if (isLogin) {
+      // 🔐 LOGIN
+      final token = await AuthService.login(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      if (token != null && token.startsWith("ey")) {
+        Navigator.pushReplacementNamed(context, "/app");
+      } else {
+        error = token ?? "Login failed";
+      }
+    } else {
+      // 🏢 SIGNUP
+      error = await AuthService.signup(
+        companyName: companyController.text.trim(),
+        name: nameController.text.trim(),
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+        repassword: confirmPasswordController.text.trim(),
+      );
+
+      if (error == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Registered successfully. Please login")),
+        );
+        setState(() => isLogin = true);
+      }
+    }
+
+    setState(() => loading = false);
+
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Card(
-        elevation: 6,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: SizedBox(
-            width: 380,
+    return Card(
+      elevation: 6,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: SizedBox(
+          width: 380,
+          child: Form(
+            key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
                   children: [
-                    _toggleButton("Login", true),
-                    _toggleButton("Signup", false),
+                    _tab("Login", true),
+                    _tab("Signup", false),
                   ],
                 ),
                 const SizedBox(height: 24),
 
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      if (!isLogin)
-                        _textField(
-                          controller: companyController,
-                          label: "Company Name",
-                        ),
-                      if (!isLogin)
-                        _textField(
-                          controller: managerController,
-                          label: "Name",
-                        ),
-                      _textField(
-                        controller: emailController,
-                        label: "Email",
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (v) {
-                          if (v == null || v.isEmpty) {
-                            return "Email required";
-                          }
-                          if (!RegExp(r'\S+@\S+\.\S+').hasMatch(v)) {
-                            return "Invalid email";
-                          }
-                          return null;
-                        },
-                      ),
-                      _textField(
-                        controller: passwordController,
-                        label: "Password",
-                        obscureText: true,
-                        validator: (v) =>
-                            v != null && v.length < 6
-                                ? "Min 6 characters"
-                                : null,
-                      ),
-                      if (!isLogin)
-                        _textField(
-                          controller: confirmPasswordController,
-                          label: "Re-enter Password",
-                          obscureText: true,
-                          validator: (v) => v != passwordController.text
-                              ? "Passwords do not match"
-                              : null,
-                        ),
+                if (!isLogin)
+                  _field(companyController, "Company Name"),
+                if (!isLogin)
+                  _field(nameController, "Name"),
 
-                      const SizedBox(height: 20),
+                _field(
+                  emailController,
+                  "Email",
+                  validator: (v) =>
+                      v!.contains("@") ? null : "Invalid email",
+                ),
 
-                      ElevatedButton(
-                        onPressed: _handleSubmit,
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 48),
-                        ),
-                        child: Text(isLogin ? "Login" : "Register"),
-                      )
-                    ],
+                _field(
+                  passwordController,
+                  "Password",
+                  obscure: true,
+                  validator: (v) =>
+                      v!.length < 6 ? "Min 6 chars" : null,
+                ),
+
+                if (!isLogin)
+                  _field(
+                    confirmPasswordController,
+                    "Re-enter Password",
+                    obscure: true,
+                    validator: (v) =>
+                        v != passwordController.text
+                            ? "Passwords do not match"
+                            : null,
                   ),
+
+                const SizedBox(height: 20),
+
+                ElevatedButton(
+                  onPressed: loading ? null : _submit,
+                  child: loading
+                      ? const CircularProgressIndicator()
+                      : Text(isLogin ? "Login" : "Register"),
                 )
               ],
             ),
@@ -106,53 +133,17 @@ class _AuthWidgetState extends State<AuthWidget> {
     );
   }
 
-  // 🔑 MAIN LOGIC HERE
-  void _handleSubmit() {
-    if (!_formKey.currentState!.validate()) return;
-
-    if (isLogin) {
-      // ✅ LOGIN → DASHBOARD
-      Navigator.pushReplacementNamed(context, '/app');
-    } else {
-      // ✅ REGISTER → BACK TO LOGIN
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Registration successful. Please login."),
-        ),
-      );
-
-      setState(() {
-        isLogin = true;
-      });
-
-      _clearSignupFields();
-    }
-  }
-
-  void _clearSignupFields() {
-    companyController.clear();
-    managerController.clear();
-    passwordController.clear();
-    confirmPasswordController.clear();
-  }
-
-  Widget _toggleButton(String text, bool mode) {
+  Widget _tab(String text, bool mode) {
     return Expanded(
       child: GestureDetector(
-        onTap: () {
-          setState(() {
-            isLogin = mode;
-          });
-        },
+        onTap: () => setState(() => isLogin = mode),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
+                color: isLogin == mode ? Colors.indigo : Colors.grey,
                 width: 2,
-                color: isLogin == mode
-                    ? Colors.indigo
-                    : Colors.grey.shade300,
               ),
             ),
           ),
@@ -161,8 +152,7 @@ class _AuthWidgetState extends State<AuthWidget> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color:
-                  isLogin == mode ? Colors.indigo : Colors.grey,
+              color: isLogin == mode ? Colors.indigo : Colors.grey,
             ),
           ),
         ),
@@ -170,21 +160,19 @@ class _AuthWidgetState extends State<AuthWidget> {
     );
   }
 
-  Widget _textField({
-    required TextEditingController controller,
-    required String label,
-    bool obscureText = false,
-    TextInputType keyboardType = TextInputType.text,
+  Widget _field(
+    TextEditingController c,
+    String label, {
+    bool obscure = false,
     String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: TextFormField(
-        controller: controller,
-        obscureText: obscureText,
-        keyboardType: keyboardType,
+        controller: c,
+        obscureText: obscure,
         validator: validator ??
-            (v) => v == null || v.isEmpty ? "$label required" : null,
+            (v) => v!.isEmpty ? "$label required" : null,
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),

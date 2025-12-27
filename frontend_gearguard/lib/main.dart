@@ -14,9 +14,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'GearGuard',
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
+      ),
+
+      // 👇 Start at login
       initialRoute: '/',
+
       routes: {
         '/': (context) => const LoginScreen(),
+
+        // 👇 Main app after auth
         '/app': (context) => const AppShell(),
       },
     );

@@ -60,8 +60,8 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(height: 28),
 
           // 🔹 DASHBOARD CARDS (PLACEHOLDERS AS PER FLOW)
-          Row(
-            children: const [
+          const Row(
+            children: [
               _DashboardCard(
                 title: "Critical Equipment",
                 count: "4",
